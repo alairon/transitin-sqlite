@@ -5,3 +5,5 @@
 /.vs
 /transitin-qlite/Debug
 /Debug
+/transitin-qlite/debugDB
+/transitin-qlite/GTFS_Samples
