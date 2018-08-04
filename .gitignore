@@ -7,3 +7,5 @@
 /Debug
 /transitin-qlite/debugDB
 /transitin-qlite/GTFS_Samples
+*.sqlite3
+*.db
