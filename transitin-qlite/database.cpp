@@ -3,11 +3,7 @@
 
 using namespace std;
 
-database::database()
-{
-}
-
-int database::callback(void *NotUsed, int argc, char **argv, char **azColName)
+int callback(void *NotUsed, int argc, char **argv, char **azColName)
 {
 	int i;
 	for (i = 0; i < argc; i++)
@@ -18,7 +14,7 @@ int database::callback(void *NotUsed, int argc, char **argv, char **azColName)
 	return 0;
 }
 
-void database::initDatabase(void* dbx) {
+void initDatabase(void* dbx) {
 	sqlite3 *db = (sqlite3*)dbx;
 	const int STATEMENTS = 13;
 	char *zErrMsg = 0;
@@ -148,10 +144,8 @@ void database::initDatabase(void* dbx) {
 	for (int i = 0; i < STATEMENTS; i++) {
 		rc = sqlite3_exec(db, pSQL[i], callback, 0, &zErrMsg);
 		if (rc != SQLITE_OK) {
-			cout << endl << "SQL Error on line" << i << ". " << sqlite3_errmsg(db) << endl << endl;
+			cout << "  SQL Error on command " << i << ". " << sqlite3_errmsg(db) << endl;
 			sqlite3_free(zErrMsg);
 		}
 	}
-
-	sqlite3_close(db);
 }
