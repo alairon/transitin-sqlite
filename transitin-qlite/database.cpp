@@ -143,9 +143,66 @@ void initDatabase(void* dbx) {
 
 	for (int i = 0; i < STATEMENTS; i++) {
 		rc = sqlite3_exec(db, pSQL[i], callback, 0, &zErrMsg);
+		//Appears if one of the pSQL commands has an SQLite error.
 		if (rc != SQLITE_OK) {
 			cout << "  SQL Error on command " << i << ". " << sqlite3_errmsg(db) << endl;
 			sqlite3_free(zErrMsg);
 		}
 	}
+}
+
+void writeValues(void* dbx, string file) {
+	sqlite3 *db = (sqlite3*)dbx;
+	char* zErrMsg;
+	int rc;
+	int processed = 0;
+	int errors = 0;
+	string GTFSDir = "GTFS_Samples";
+	string headers;
+	string line;
+	string sqlCommand;
+
+	ifstream fp(GTFSDir + "/" + file + ".txt");
+
+	//If the file cannot be opened, skip everything else
+	if (!fp) {
+		cout << file << " could not be opened.";
+		return;
+	}
+
+	//Read the first line to gather headers
+	getline(fp, headers);
+
+	//Read the read of the lines and insert into the table
+	while (getline(fp, line)) {
+		//cout << quoteLine(line) << endl;
+		sqlCommand = "INSERT OR REPLACE INTO " + file + "(" + headers + ") VALUES (" + quoteLine(line) + ")";
+		rc = sqlite3_exec(db, sqlCommand.c_str(), callback, 0, &zErrMsg);
+		processed++;
+
+		//If an error appears, show
+		if (rc) {
+			errors++;
+			//cout << "\r" << "Error on line: " << processed << endl << "  " << zErrMsg << endl;
+		}
+
+		cout << "\r" << "  " << file << ": " << processed << " lines processed with " << errors << " errors.";
+	}
+	cout << endl;
+}
+
+string quoteLine(string line) {
+	string returnLine;
+	istringstream iss(line);
+	string token;
+
+	//Add quotes to every word in the command
+	while (getline(iss, token, ',')) {
+		returnLine = returnLine + "'" + token + "',";
+	}
+
+	//Remove the extra comma
+	returnLine.pop_back();
+
+	return returnLine;
 }
