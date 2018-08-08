@@ -51,7 +51,7 @@ void initDatabase(void* dbx) {
 		"route_short_name varchar(16),"
 		"route_long_name varchar(99),"
 		"route_desc varchar(256),"
-		"route_type varchar(128),"
+		"route_type integer,"
 		"route_url varchar(256),"
 		"route_color varchar(6),"
 		"route_text_color varchar(6),"
@@ -65,7 +65,9 @@ void initDatabase(void* dbx) {
 		"trip_short_name varchar(99),"
 		"direction_id boolean,"
 		"block_id varchar(32),"
-		"shape_id varchar(8)"
+		"shape_id varchar(8),"
+		"wheelchair_accessible integer unsigned,"
+		"bikes_allowed integer unsigned"
 		")";
 	pSQL[4] = "CREATE TABLE IF NOT EXISTS stop_times ("
 		"trip_id varchar(10),"
@@ -117,7 +119,7 @@ void initDatabase(void* dbx) {
 		"shape_pt_lat decimal(8,6),"
 		"shape_pt_lon decimal(9,6),"
 		"shape_pt_sequence integers unsigned,"
-		"shape_dist_draveled integer"
+		"shape_dist_traveled integer"
 		")";
 	pSQL[10] = "CREATE TABLE IF NOT EXISTS frequencies ("
 		"trip_id varchar(10),"
@@ -166,7 +168,7 @@ void writeValues(void* dbx, string file) {
 
 	//If the file cannot be opened, skip everything else
 	if (!fp) {
-		cout << file << " could not be opened.";
+		cout << "  " << file << ": <N/A>" << endl;
 		return;
 	}
 
@@ -183,7 +185,7 @@ void writeValues(void* dbx, string file) {
 		//If an error appears, show
 		if (rc) {
 			errors++;
-			//cout << "\r" << "Error on line: " << processed << endl << "  " << zErrMsg << endl;
+			cout << "\r" << "Error on line: " << processed << endl << "  " << zErrMsg << endl;
 		}
 
 		cout << "\r" << "  " << file << ": " << processed << " lines processed with " << errors << " errors.";
