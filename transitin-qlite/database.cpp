@@ -175,6 +175,8 @@ void writeValues(void* dbx, string file) {
 	//Read the first line to gather headers
 	getline(fp, headers);
 
+	headers = checkEncoding(headers);
+
 	//Read the read of the lines and insert into the table
 	while (getline(fp, line)) {
 		//cout << quoteLine(line) << endl;
@@ -185,12 +187,29 @@ void writeValues(void* dbx, string file) {
 		//If an error appears, show
 		if (rc) {
 			errors++;
-			cout << "\r" << "Error on line: " << processed << endl << "  " << zErrMsg << endl;
+			cout << "\r" << "Error on line: " << processed << "                            " << endl << "  " << zErrMsg << endl;
 		}
 
 		cout << "\r" << "  " << file << ": " << processed << " lines processed with " << errors << " errors.";
 	}
 	cout << endl;
+}
+
+
+//Checks if the line contains a byte order mark. Returns the string without such a mark, or leaves it as-is
+string checkEncoding(string header) {
+	cout << header << endl;
+	if (header.at(0) == char(0xEF) && header.at(1) == char(0xBB) && header.at(2) == char(0xBF)) {
+		cout << "Encoding: UTF-8 (BOM)" << endl;
+		return(header.substr(3, header.length()));
+	}
+	else if (header.at(0) == char(0xFF) && header.at(1) == char(0xFE)) {
+		cout << "Encoding: UTF-16 (BE)" << endl;
+	}
+	else if (header.at(0) == char(0xFE) && header.at(1) == char(0xFF)) {
+		cout << "Encoding: UTF-16 (LE)";
+	}
+	return (header);
 }
 
 string quoteLine(string line) {
