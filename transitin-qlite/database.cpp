@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "database.hpp"
+#include "parser.hpp"
 
 using namespace std;
 
@@ -14,6 +15,7 @@ int callback(void *NotUsed, int argc, char **argv, char **azColName)
 	return 0;
 }
 
+//Initalizes the database with the headers specified under the GTF Specification
 void initDatabase(void* dbx) {
 	sqlite3 *db = (sqlite3*)dbx;
 	const int STATEMENTS = 13;
@@ -153,6 +155,7 @@ void initDatabase(void* dbx) {
 	}
 }
 
+//Inserts values into the database
 void writeValues(void* dbx, string file) {
 	sqlite3 *db = (sqlite3*)dbx;
 	char* zErrMsg;
@@ -193,37 +196,4 @@ void writeValues(void* dbx, string file) {
 		cout << "\r" << "  " << file << ": " << processed << " lines processed with " << errors << " errors.";
 	}
 	cout << endl;
-}
-
-
-//Checks if the line contains a byte order mark. Returns the string without such a mark, or leaves it as-is
-string checkEncoding(string header) {
-	cout << header << endl;
-	if (header.at(0) == char(0xEF) && header.at(1) == char(0xBB) && header.at(2) == char(0xBF)) {
-		cout << "Encoding: UTF-8 (BOM)" << endl;
-		return(header.substr(3, header.length()));
-	}
-	else if (header.at(0) == char(0xFF) && header.at(1) == char(0xFE)) {
-		cout << "Encoding: UTF-16 (BE)" << endl;
-	}
-	else if (header.at(0) == char(0xFE) && header.at(1) == char(0xFF)) {
-		cout << "Encoding: UTF-16 (LE)";
-	}
-	return (header);
-}
-
-string quoteLine(string line) {
-	string returnLine;
-	istringstream iss(line);
-	string token;
-
-	//Add quotes to every word in the command
-	while (getline(iss, token, ',')) {
-		returnLine = returnLine + "'" + token + "',";
-	}
-
-	//Remove the extra comma
-	returnLine.pop_back();
-
-	return returnLine;
 }
