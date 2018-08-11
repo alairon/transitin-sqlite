@@ -2,11 +2,22 @@
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
 
+## Visual Studio Files ##
 /.vs
-/transitin-qlite/Debug
 /Debug
+/Release
+/transitin-qlite/Debug
+/transitin-qlite/Release
+
+## Visual Studio Temp/Recovery Files ##
+/enc_temp_folder
+
+## Personal Testing Files ##
 /transitin-qlite/debugDB
 /transitin-qlite/GTFS_Samples
+/transitin-qlite/GTFSErrors.txt
+
+## SQLite files ##
 *.db
 *.sqlite3
 *.sqlite3-journal

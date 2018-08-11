@@ -162,12 +162,19 @@ void writeValues(void* dbx, string file) {
 	int rc;
 	int processed = 0;
 	int errors = 0;
+	int totalLines = 0;
+	double completion = 0;
 	string GTFSDir = "GTFS_Samples";
 	string headers;
 	string line;
 	string sqlCommand;
 
 	ifstream fp(GTFSDir + "/" + file + ".txt");
+
+	//Determine number of lines that need to be processed
+	fp.seekg(0, fp.end);
+	totalLines = static_cast<int>(fp.tellg());
+	fp.seekg(0, fp.beg);
 
 	//If the file cannot be opened, skip everything else
 	if (!fp) {
@@ -183,17 +190,36 @@ void writeValues(void* dbx, string file) {
 	//Read the read of the lines and insert into the table
 	while (getline(fp, line)) {
 		//cout << quoteLine(line) << endl;
-		sqlCommand = "INSERT OR REPLACE INTO " + file + "(" + headers + ") VALUES (" + quoteLine(line) + ")";
+		sqlCommand = "INSERT OR IGNORE INTO " + file + "(" + headers + ") VALUES (" + quoteLine(line) + ")";
 		rc = sqlite3_exec(db, sqlCommand.c_str(), callback, 0, &zErrMsg);
-		processed++;
+		//processed++;
+		processed = static_cast<int>(fp.tellg());
 
 		//If an error appears, show
 		if (rc) {
 			errors++;
-			cout << "\r" << "Error on line: " << processed << "                            " << endl << "  " << zErrMsg << endl;
+			ofstream errord;
+			errord.open("GTFSErrors.txt");
+			errord << zErrMsg << endl << sqlCommand << endl << endl;
+			errord.close();
+
+			if (errors > 999) {
+				cout << "There are too many errors.";
+				break;
+			}
 		}
 
-		cout << "\r" << "  " << file << ": " << processed << " lines processed with " << errors << " errors.";
+		completion = (processed / (double)totalLines) * 100.00;
+		cout << fixed;
+		cout << setprecision(2);
+		cout << "\r" << "  " << file << ": " << processed << "/" << totalLines << " (" << completion << "%) bytes processed with " << errors << " errors.";
 	}
 	cout << endl;
+}
+
+void writeErrors(string errorLine) {
+	ofstream error;
+	error.open("GTFSErrors.txt");
+	error << errorLine << endl;
+	error.close();
 }
