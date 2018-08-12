@@ -4,6 +4,7 @@
 
 using namespace std;
 
+//The callback function used when sqlite3_exec() is called
 int callback(void *NotUsed, int argc, char **argv, char **azColName)
 {
 	int i;
@@ -160,9 +161,10 @@ void writeValues(void* dbx, string file) {
 	sqlite3 *db = (sqlite3*)dbx;
 	char* zErrMsg;
 	int rc;
-	int processed = 0;
+	int linesProcessed = 0;
+	int bytesProcessed = 0;
 	int errors = 0;
-	int totalLines = 0;
+	int totalBytes = 0;
 	double completion = 0;
 	string GTFSDir = "GTFS_Samples";
 	string headers;
@@ -171,16 +173,16 @@ void writeValues(void* dbx, string file) {
 
 	ifstream fp(GTFSDir + "/" + file + ".txt");
 
-	//Determine number of lines that need to be processed
-	fp.seekg(0, fp.end);
-	totalLines = static_cast<int>(fp.tellg());
-	fp.seekg(0, fp.beg);
-
-	//If the file cannot be opened, skip everything else
-	if (!fp) {
-		cout << "  " << file << ": <N/A>" << endl;
+	//Skip everything else if the file could not be opened.
+	if (!fp.is_open()) {
+		cout << "  " << file << ": <N/A> - File could not be opened" << endl;
 		return;
 	}
+
+	//Determine number of lines that need to be processed
+	fp.seekg(0, fp.end);
+	totalBytes = static_cast<int>(fp.tellg());
+	fp.seekg(0, fp.beg);
 
 	//Read the first line to gather headers
 	getline(fp, headers);
@@ -189,37 +191,32 @@ void writeValues(void* dbx, string file) {
 
 	//Read the read of the lines and insert into the table
 	while (getline(fp, line)) {
-		//cout << quoteLine(line) << endl;
-		sqlCommand = "INSERT OR IGNORE INTO " + file + "(" + headers + ") VALUES (" + quoteLine(line) + ")";
+		sqlCommand = "INSERT OR REPLACE INTO " + file + "(" + headers + ") VALUES (" + quoteLine(line) + ")";
 		rc = sqlite3_exec(db, sqlCommand.c_str(), callback, 0, &zErrMsg);
-		//processed++;
-		processed = static_cast<int>(fp.tellg());
+		linesProcessed++;
+		bytesProcessed = static_cast<int>(fp.tellg());
 
 		//If an error appears, show
 		if (rc) {
 			errors++;
 			ofstream errord;
-			errord.open("GTFSErrors.txt");
-			errord << zErrMsg << endl << sqlCommand << endl << endl;
+			errord.open("GTFSErrors.txt", ios_base::app);
+			errord << "An error occurred on line " << linesProcessed << " while processing '" << file << "'" << endl << "  Msg:" << zErrMsg << endl << "  SQL: " << sqlCommand << endl << endl;
 			errord.close();
 
-			if (errors > 999) {
+			if (errors > 1000) {
 				cout << "There are too many errors.";
 				break;
 			}
 		}
 
-		completion = (processed / (double)totalLines) * 100.00;
+		completion = (bytesProcessed / (double)totalBytes) * 100.00;
+
 		cout << fixed;
 		cout << setprecision(2);
-		cout << "\r" << "  " << file << ": " << processed << "/" << totalLines << " (" << completion << "%) bytes processed with " << errors << " errors.";
+		cout << "\r" << "  " << file << ": " << bytesProcessed << "/" << totalBytes << " (" << completion << "%) bytes processed with " << errors << " errors.";
 	}
+	cout << "\r\t\t\t\t\t\t\t\t\t\t\r" << "  " << file << ": " << totalBytes << " bytes processed with " << errors << " errors.";
 	cout << endl;
-}
-
-void writeErrors(string errorLine) {
-	ofstream error;
-	error.open("GTFSErrors.txt");
-	error << errorLine << endl;
-	error.close();
+	fp.close();
 }
