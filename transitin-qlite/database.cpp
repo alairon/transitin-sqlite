@@ -196,7 +196,7 @@ void writeValues(void* dbx, string file) {
 		linesProcessed++;
 		bytesProcessed = static_cast<int>(fp.tellg());
 
-		//If an error appears, show
+		//If an error appears, write into an error output txt file
 		if (rc) {
 			errors++;
 			ofstream errord;
@@ -204,7 +204,8 @@ void writeValues(void* dbx, string file) {
 			errord << "An error occurred on line " << linesProcessed << " while processing '" << file << "'" << endl << "  Msg:" << zErrMsg << endl << "  SQL: " << sqlCommand << endl << endl;
 			errord.close();
 
-			if (errors > 1000) {
+			//Stop processing if there are more than 1000 errors
+			if (errors > 999) {
 				cout << "There are too many errors.";
 				break;
 			}
