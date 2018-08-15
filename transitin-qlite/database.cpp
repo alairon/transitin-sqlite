@@ -190,6 +190,7 @@ void writeValues(void* dbx, string file) {
 	headers = checkEncoding(headers);
 
 	//Read the read of the lines and insert into the table
+	sqlite3_exec(db, "BEGIN TRANSACTION", callback, 0, &zErrMsg);
 	while (getline(fp, line)) {
 		sqlCommand = "INSERT OR REPLACE INTO " + file + "(" + headers + ") VALUES (" + quoteLine(line) + ")";
 		rc = sqlite3_exec(db, sqlCommand.c_str(), callback, 0, &zErrMsg);
@@ -200,7 +201,7 @@ void writeValues(void* dbx, string file) {
 		if (rc) {
 			errors++;
 			ofstream errord;
-			errord.open("GTFSErrors.txt", ios_base::app);
+			errord.open("GTFSErrors.txt", ios_base::app); //Append to end of file
 			errord << "An error occurred on line " << linesProcessed << " while processing '" << file << "'" << endl << "  Msg:" << zErrMsg << endl << "  SQL: " << sqlCommand << endl << endl;
 			errord.close();
 
@@ -214,9 +215,10 @@ void writeValues(void* dbx, string file) {
 
 		cout << fixed;
 		cout << setprecision(2);
-		cout << "\r" << "  " << file << ": " << bytesProcessed << "/" << totalBytes << " (" << completion << "%) bytes processed with " << errors << " errors.";
+		cout << "\r" << "  " << file << ": " << linesProcessed << " (" << completion << "%) lines processed with " << errors << " errors.";
 	}
-	cout << "\r\t\t\t\t\t\t\t\t\t\t\r" << "  " << file << ": " << totalBytes << " bytes processed with " << errors << " errors.";
+	sqlite3_exec(db, "COMMIT", callback, 0, &zErrMsg);
+	cout << "\r\t\t\t\t\t\t\t\t\t\t\t\t\t\t\r" << "  " << file << ": " << linesProcessed << " lines processed with " << errors << " errors.";
 	cout << endl;
 	fp.close();
 }
