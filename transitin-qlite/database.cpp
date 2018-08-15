@@ -206,7 +206,6 @@ void writeValues(void* dbx, string file) {
 			errord.close();
 
 			if (errors > 1000) {
-				cout << "There are too many errors.";
 				break;
 			}
 		}
@@ -215,10 +214,10 @@ void writeValues(void* dbx, string file) {
 
 		cout << fixed;
 		cout << setprecision(2);
-		cout << "\r" << "  " << file << ": " << linesProcessed << " (" << completion << "%) lines processed with " << errors << " errors.";
+		cout << "\r" << "  " << file << ": " << linesProcessed << " (" << completion << "%) line(s) processed with " << errors << " error(s).";
 	}
 	sqlite3_exec(db, "COMMIT", callback, 0, &zErrMsg);
-	cout << "\r\t\t\t\t\t\t\t\t\t\t\t\t\t\t\r" << "  " << file << ": " << linesProcessed << " lines processed with " << errors << " errors.";
+	cout << "\r\t\t\t\t\t\t\t\t\t\t\t\t\t\t\r" << "  " << file << ": " << linesProcessed << " line(s) processed with " << errors << " error(s).";
 	cout << endl;
 	fp.close();
 }
