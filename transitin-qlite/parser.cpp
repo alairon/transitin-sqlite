@@ -24,9 +24,16 @@ string quoteLine(string line) {
 	stringstream iss(line);
 	string token;
 
-	//Add quotes to every word in the command
+	//Loops through to add quotes if necessary
 	while (getline(iss, token, ',')) {
-		returnLine = returnLine + "\"" + token + "\",";
+		//If a token contains a double quotation, do not add quotations
+		if (token.find('"') != string::npos) {
+			returnLine = returnLine + token + ",";
+		}
+		//Add quotes to every token in the command
+		else {
+			returnLine = returnLine + "\"" + token + "\",";
+		}
 	}
 	//Check for trailing blank commas
 	if (!iss && token.empty()) {
