@@ -27,10 +27,10 @@
     <ClInclude Include="parser.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="files.hpp">
+    <ClInclude Include="validation.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="validation.hpp">
+    <ClInclude Include="system.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -50,7 +50,7 @@
     <ClCompile Include="validation.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="files.cpp">
+    <ClCompile Include="system.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

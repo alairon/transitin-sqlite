@@ -157,12 +157,12 @@
     <ClInclude Include="parser.hpp" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
-    <ClInclude Include="files.hpp" />
+    <ClInclude Include="system.hpp" />
     <ClInclude Include="validation.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="database.cpp" />
-    <ClCompile Include="files.cpp" />
+    <ClCompile Include="system.cpp" />
     <ClCompile Include="parser.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

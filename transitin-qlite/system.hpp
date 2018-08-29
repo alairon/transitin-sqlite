@@ -9,4 +9,6 @@ extern std::string optionalFiles[7];
 
 bool mandatoryFileCheck();
 
+void showConsoleCursor(bool showFlag);
+
 void initErrorFile(time_t currentTime);

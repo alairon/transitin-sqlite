@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "system.hpp"
 #include "validation.hpp"
 
 using namespace std;
@@ -38,6 +39,18 @@ bool mandatoryFileCheck() {
 		}
 	}
 	return (returnFlag);
+}
+
+//Hide the output cursor.
+void showConsoleCursor(bool showFlag)
+{
+	HANDLE out = GetStdHandle(STD_OUTPUT_HANDLE);
+
+	CONSOLE_CURSOR_INFO     cursorInfo;
+
+	GetConsoleCursorInfo(out, &cursorInfo);
+	cursorInfo.bVisible = showFlag;
+	SetConsoleCursorInfo(out, &cursorInfo);
 }
 
 //Initialize/Clear the error output file
