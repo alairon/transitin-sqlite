@@ -5,18 +5,17 @@
 using namespace std;
 
 //The callback function used when sqlite3_exec() is called
-int callback(void *NotUsed, int argc, char **argv, char **azColName)
+int callback(void *pArg, int argc, char **argv, char **colName)
 {
-	int i;
-	for (i = 0; i < argc; i++)
+	for (int i = 0; i < argc; i++)
 	{
-		cout << azColName[i] << " = " << (argv[i] ? argv[i] : "NULL") << endl;
+		cout << colName[i] << " = " << (argv[i] ? argv[i] : "NULL") << endl;
 	}
-	cout << "\n";
+	cout << endl;
 	return 0;
 }
 
-//Initalizes the database with the headers specified under the GTF Specification
+//Initalizes the database with the standard headers specified under the GTFS
 void initDatabase(void* dbx) {
 	sqlite3 *db = (sqlite3*)dbx;
 	const int STATEMENTS = 13;
@@ -25,34 +24,34 @@ void initDatabase(void* dbx) {
 	int rc;
 
 	pSQL[0] = "CREATE TABLE IF NOT EXISTS agency ("
-		"agency_id varchar(10) UNIQUE ON CONFLICT REPLACE,"
-		"agency_name varchar(99),"
+		"agency_id varchar(16) UNIQUE ON CONFLICT REPLACE,"
+		"agency_name varchar(128),"
 		"agency_url varchar(256),"
 		"agency_timezone varchar(64),"
 		"agency_lang varchar(2),"
-		"agency_phone varchar(15),"
+		"agency_phone varchar(16),"
 		"agency_fare_url varchar(256),"
 		"agency_email varchar(64)"
 		")";
 	pSQL[1] = "CREATE TABLE IF NOT EXISTS stops ("
-		"stop_id varchar(20) UNIQUE ON CONFLICT REPLACE,"
-		"stop_code varchar(10) UNIQUE ON CONFLICT REPLACE,"
-		"stop_name varchar(99),"
-		"stop_desc varchar(99),"
+		"stop_id varchar(32) UNIQUE ON CONFLICT REPLACE,"
+		"stop_code varchar(16) UNIQUE ON CONFLICT REPLACE,"
+		"stop_name varchar(128),"
+		"stop_desc varchar(128),"
 		"stop_lat decimal(8,6),"
 		"stop_lon decimal(9,6),"
 		"zone_id varchar(32),"
 		"stop_url varchar(256),"
 		"location_type integer,"
-		"parent_station varchar(99),"
-		"stop_timezone varchar(99),"
+		"parent_station varchar(128),"
+		"stop_timezone varchar(128),"
 		"wheelchair_boarding integer"
 		")";
 	pSQL[2] = "CREATE TABLE IF NOT EXISTS routes ("
-		"route_id varchar(20) UNIQUE ON CONFLICT REPLACE,"
-		"agency_id varchar(30),"
+		"route_id varchar(32) UNIQUE ON CONFLICT REPLACE,"
+		"agency_id varchar(32),"
 		"route_short_name varchar(16),"
-		"route_long_name varchar(99),"
+		"route_long_name varchar(128),"
 		"route_desc varchar(256),"
 		"route_type integer,"
 		"route_url varchar(256),"
@@ -61,11 +60,11 @@ void initDatabase(void* dbx) {
 		"route_sort_order integer unsigned"
 		")";
 	pSQL[3] = "CREATE TABLE IF NOT EXISTS trips ("
-		"route_id varchar(20),"
-		"service_id varchar(10),"
+		"route_id varchar(32),"
+		"service_id varchar(16),"
 		"trip_id varchar(32) UNIQUE ON CONFLICT REPLACE,"
-		"trip_headsign varchar(99),"
-		"trip_short_name varchar(99),"
+		"trip_headsign varchar(128),"
+		"trip_short_name varchar(128),"
 		"direction_id boolean,"
 		"block_id varchar(32),"
 		"shape_id varchar(8),"
@@ -73,19 +72,19 @@ void initDatabase(void* dbx) {
 		"bikes_allowed integer unsigned"
 		")";
 	pSQL[4] = "CREATE TABLE IF NOT EXISTS stop_times ("
-		"trip_id varchar(10),"
+		"trip_id varchar(16),"
 		"arrival_time varchar(8),"
 		"departure_time varchar(8),"
-		"stop_id varchar(10),"
+		"stop_id varchar(16),"
 		"stop_sequence integer unsigned,"
-		"stop_headsign varchar(99),"
-		"pickup_type varchar(99),"
-		"drop_off_type varchar(99),"
+		"stop_headsign varchar(128),"
+		"pickup_type varchar(128),"
+		"drop_off_type varchar(128),"
 		"shape_dist_traveled integer,"
-		"timepoint varchar(99)"
+		"timepoint varchar(128)"
 		")";
 	pSQL[5] = "CREATE TABLE IF NOT EXISTS calendar ("
-		"service_id varchar(10) UNIQUE ON CONFLICT REPLACE,"
+		"service_id varchar(16) UNIQUE ON CONFLICT REPLACE,"
 		"monday boolean,"
 		"tuesday boolean,"
 		"wednesday boolean,"
@@ -97,25 +96,25 @@ void initDatabase(void* dbx) {
 		"end_date varchar(8)"
 		")";
 	pSQL[6] = "CREATE TABLE IF NOT EXISTS calendar_dates ("
-		"service_id varchar(20),"
+		"service_id varchar(16),"
 		"date varchar(8),"
 		"exception_type integer"
 		")";
 	pSQL[7] = "CREATE TABLE IF NOT EXISTS fare_attributes ("
-		"fare_id varchar(10) UNIQUE ON CONFLICT REPLACE,"
-		"price varchar(10),"
+		"fare_id varchar(16) UNIQUE ON CONFLICT REPLACE,"
+		"price varchar(16),"
 		"currency_type varchar(3),"
 		"payment_method boolean,"
 		"transfers integer,"
-		"agency_id varchar(10),"
+		"agency_id varchar(16),"
 		"transfer_duration integer unsigned"
 		")";
 	pSQL[8] = "CREATE TABLE IF NOT EXISTS fare_rules ("
-		"fare_id varchar(10),"
-		"route_id varchar(10),"
-		"origin_id varchar(10),"
-		"destination_id varchar(10),"
-		"contains_id varchar(10)"
+		"fare_id varchar(16),"
+		"route_id varchar(16),"
+		"origin_id varchar(16),"
+		"destination_id varchar(16),"
+		"contains_id varchar(16)"
 		")";
 	pSQL[9] = "CREATE TABLE IF NOT EXISTS shapes ("
 		"shape_id varchar(16),"
@@ -125,25 +124,25 @@ void initDatabase(void* dbx) {
 		"shape_dist_traveled integer"
 		")";
 	pSQL[10] = "CREATE TABLE IF NOT EXISTS frequencies ("
-		"trip_id varchar(10),"
+		"trip_id varchar(16),"
 		"start_time varchar(8),"
 		"end_time varchar(8),"
 		"headway_secs integer unsigned,"
 		"exact_times boolean"
 		")";
 	pSQL[11] = "CREATE TABLE IF NOT EXISTS transfers ("
-		"from_stop_id varchar(10),"
-		"to_stop id varchar(10),"
+		"from_stop_id varchar(16),"
+		"to_stop id varchar(16),"
 		"transfer_type integer,"
 		"min_transfer_time integer unsigned"
 		")";
 	pSQL[12] = "CREATE TABLE IF NOT EXISTS feed_info ("
-		"feed_publisher_name varchar(99),"
+		"feed_publisher_name varchar(128),"
 		"feed_publisher_url varchar(256),"
 		"feed_lang varchar(8),"
 		"feed_start_date varchar(8),"
 		"feed_end_date varchar(8),"
-		"feed_version varchar(24)"
+		"feed_version varchar(32)"
 		")";
 
 	for (int i = 0; i < STATEMENTS; i++) {
@@ -175,7 +174,7 @@ void writeValues(void* dbx, string file) {
 
 	//Skip everything else if the file could not be opened.
 	if (!fp.is_open()) {
-		cout << "  " << file << ": <N/A> - File could not be opened" << endl;
+		cout << "  " << file << ": <N/A> - File not found" << endl;
 		return;
 	}
 
@@ -187,7 +186,8 @@ void writeValues(void* dbx, string file) {
 	//Read the first line to gather headers
 	getline(fp, headers);
 
-	headers = checkEncoding(headers);
+	//Check if the file is encoded with a byte-order mark
+	headers = checkEncoding(headers); 
 
 	//Read the read of the lines and insert into the table
 	sqlite3_exec(db, "BEGIN TRANSACTION", callback, 0, &zErrMsg);
@@ -197,28 +197,33 @@ void writeValues(void* dbx, string file) {
 		linesProcessed++;
 		bytesProcessed = static_cast<int>(fp.tellg());
 
-		//If an error appears, show
+		//If an error appears, write it into the error output file
 		if (rc) {
 			errors++;
-			ofstream errord;
-			errord.open("GTFSErrors.txt", ios_base::app); //Append to end of file
-			errord << "An error occurred on line " << linesProcessed << " while processing '" << file << "'" << endl << "  Msg:" << zErrMsg << endl << "  SQL: " << sqlCommand << endl << endl;
-			errord.close();
-
-			if (errors > 1000) {
-				cout << " Large amount of errors detected.";
-				//break;
-			}
+			ofstream errorOut;
+			errorOut.open("GTFS_Errors.txt", ios_base::app); //Append to end of file
+			errorOut << "An error occurred on line " << linesProcessed << " while processing '" << file << "'" << endl << "  Msg:" << zErrMsg << endl << "  SQL: " << sqlCommand << endl << endl;
+			errorOut.close();
 		}
 
 		completion = (bytesProcessed / (double)totalBytes) * 100.00;
 
+		//Set double decimal precision
 		cout << fixed;
 		cout << setprecision(2);
-		cout << "\r" << "  " << file << ": " << linesProcessed << " line(s) processed " << "[" << completion << "%].";
+
+		//Output current status with number of errors, if any
+		if (errors > 0) {
+			cout << "\r" << "  " << file << ": " << linesProcessed << " line(s) processed with " << errors << " errors [" << completion << "%].";
+		}
+		else {
+			cout << "\r" << "  " << file << ": " << linesProcessed << " line(s) processed " << "[" << completion << "%].                              ";
+		}
 	}
+
+	//Finalize changes
 	sqlite3_exec(db, "COMMIT", callback, 0, &zErrMsg);
-	cout << "\r" << "  " << file << ": " << linesProcessed << " line(s) processed with " << errors << " error(s).";
+	cout << "\r" << "  " << file << ": " << linesProcessed << " line(s) processed with " << errors << " error(s).                             ";
 	cout << endl;
 	fp.close();
 }
