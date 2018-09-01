@@ -5,7 +5,7 @@
 
 using namespace std;
 
-//The callback function used when sqlite3_exec() is called
+//The callback function used when SELECT statements are called
 int callback(void *pArg, int argc, char **argv, char **colName)
 {
 	for (int i = 0; i < argc; i++)
@@ -24,6 +24,7 @@ void initDatabase(void* dbx) {
 	const char *pSQL[STATEMENTS];
 	int rc;
 
+	//agency
 	pSQL[0] = "CREATE TABLE IF NOT EXISTS agency ("
 		"agency_id varchar(16) UNIQUE ON CONFLICT REPLACE,"
 		"agency_name varchar(128),"
@@ -34,6 +35,7 @@ void initDatabase(void* dbx) {
 		"agency_fare_url varchar(256),"
 		"agency_email varchar(64)"
 		")";
+	//stops
 	pSQL[1] = "CREATE TABLE IF NOT EXISTS stops ("
 		"stop_id varchar(32) UNIQUE ON CONFLICT REPLACE,"
 		"stop_code varchar(16) UNIQUE ON CONFLICT REPLACE,"
@@ -48,6 +50,7 @@ void initDatabase(void* dbx) {
 		"stop_timezone varchar(128),"
 		"wheelchair_boarding integer"
 		")";
+	//routes
 	pSQL[2] = "CREATE TABLE IF NOT EXISTS routes ("
 		"route_id varchar(32) UNIQUE ON CONFLICT REPLACE,"
 		"agency_id varchar(32),"
@@ -60,6 +63,7 @@ void initDatabase(void* dbx) {
 		"route_text_color varchar(6),"
 		"route_sort_order integer unsigned"
 		")";
+	//trips
 	pSQL[3] = "CREATE TABLE IF NOT EXISTS trips ("
 		"route_id varchar(32),"
 		"service_id varchar(16),"
@@ -72,6 +76,7 @@ void initDatabase(void* dbx) {
 		"wheelchair_accessible integer unsigned,"
 		"bikes_allowed integer unsigned"
 		")";
+	//stop_times
 	pSQL[4] = "CREATE TABLE IF NOT EXISTS stop_times ("
 		"trip_id varchar(16),"
 		"arrival_time varchar(8),"
@@ -84,6 +89,7 @@ void initDatabase(void* dbx) {
 		"shape_dist_traveled integer,"
 		"timepoint varchar(128)"
 		")";
+	//calendar
 	pSQL[5] = "CREATE TABLE IF NOT EXISTS calendar ("
 		"service_id varchar(16) UNIQUE ON CONFLICT REPLACE,"
 		"monday boolean,"
@@ -96,11 +102,13 @@ void initDatabase(void* dbx) {
 		"start_date varchar(8),"
 		"end_date varchar(8)"
 		")";
+	//calendar_dates
 	pSQL[6] = "CREATE TABLE IF NOT EXISTS calendar_dates ("
 		"service_id varchar(16),"
 		"date varchar(8),"
 		"exception_type integer"
 		")";
+	//fare_attributes
 	pSQL[7] = "CREATE TABLE IF NOT EXISTS fare_attributes ("
 		"fare_id varchar(16) UNIQUE ON CONFLICT REPLACE,"
 		"price varchar(16),"
@@ -110,6 +118,7 @@ void initDatabase(void* dbx) {
 		"agency_id varchar(16),"
 		"transfer_duration integer unsigned"
 		")";
+	//fare_rules
 	pSQL[8] = "CREATE TABLE IF NOT EXISTS fare_rules ("
 		"fare_id varchar(16),"
 		"route_id varchar(16),"
@@ -117,6 +126,7 @@ void initDatabase(void* dbx) {
 		"destination_id varchar(16),"
 		"contains_id varchar(16)"
 		")";
+	//shapes
 	pSQL[9] = "CREATE TABLE IF NOT EXISTS shapes ("
 		"shape_id varchar(16),"
 		"shape_pt_lat decimal(8,6),"
@@ -124,6 +134,7 @@ void initDatabase(void* dbx) {
 		"shape_pt_sequence integers unsigned,"
 		"shape_dist_traveled integer"
 		")";
+	//frequencies
 	pSQL[10] = "CREATE TABLE IF NOT EXISTS frequencies ("
 		"trip_id varchar(16),"
 		"start_time varchar(8),"
@@ -131,12 +142,14 @@ void initDatabase(void* dbx) {
 		"headway_secs integer unsigned,"
 		"exact_times boolean"
 		")";
+	//transfers
 	pSQL[11] = "CREATE TABLE IF NOT EXISTS transfers ("
 		"from_stop_id varchar(16),"
 		"to_stop id varchar(16),"
 		"transfer_type integer,"
 		"min_transfer_time integer unsigned"
 		")";
+	//feed_info
 	pSQL[12] = "CREATE TABLE IF NOT EXISTS feed_info ("
 		"feed_publisher_name varchar(128),"
 		"feed_publisher_url varchar(256),"
@@ -146,6 +159,7 @@ void initDatabase(void* dbx) {
 		"feed_version varchar(32)"
 		")";
 
+	//Insert the tables into the database
 	for (int i = 0; i < STATEMENTS; i++) {
 		rc = sqlite3_exec(db, pSQL[i], callback, 0, &zErrMsg);
 		//Appears if one of the pSQL commands has an SQLite error.
@@ -166,7 +180,6 @@ void writeValues(void* dbx, string file) {
 	int errors = 0;
 	int totalBytes = 0;
 	double completion = 0;
-	string GTFSDir = "GTFS_Samples";
 	string headers;
 	string line;
 	string sqlCommand;
@@ -238,9 +251,12 @@ void tableColExists(void * dbx, string table, string header){
 	string token;
 	string userAnswer;
 
+	//Output the affected table for the user to see
 	cout << "  " << table << ":";
 
+	//Go through the headers
 	while (getline(iss, token, ',')) {
+		//Check if the column would exist
 		string sqlCommand = "SELECT " + token + " FROM " + table + " LIMIT 0";
 		int rc = sqlite3_exec(db, sqlCommand.c_str(), 0, 0, NULL);
 		bool validInputFlag = true;
@@ -303,8 +319,6 @@ void tableColExists(void * dbx, string table, string header){
 			showConsoleCursor(false); //Hide the cursor again
 		}
 	}
-
-	//
 
 	return;
 }
