@@ -3,7 +3,8 @@
 
 using namespace std;
 
-//Checks if the line contains a byte order mark. Returns the string without such a mark, or leaves it as-is. Only supports UTF-8
+/*Checks if the line contains a byte order mark. Returns the string without such a mark, or leaves it as-is. 
+Only supports ANSI or UTF-8*/
 string checkEncoding(string header) {
 	if (header.at(0) == char(0xEF) && header.at(1) == char(0xBB) && header.at(2) == char(0xBF)) {
 		return(header.substr(3, header.length()));
@@ -11,7 +12,7 @@ string checkEncoding(string header) {
 	return (header);
 }
 
-//Adds quotations to each element in the line
+/*Adds quotes around each comma delimited word in a string*/
 string quoteLine(string line) {
 	string returnLine;
 	stringstream iss(line);
@@ -37,5 +38,5 @@ string quoteLine(string line) {
 		returnLine.pop_back();
 	}
 
-	return returnLine;
+	return (returnLine);
 }

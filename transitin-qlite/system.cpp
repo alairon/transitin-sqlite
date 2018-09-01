@@ -11,6 +11,7 @@ string GTFSDir = "GTFS_Samples";
 string mandatoryFiles[6] = { "agency", "stops", "routes", "trips", "stop_times", "calendar" };
 string optionalFiles[7] = { "calendar_dates", "fare_attributes", "fare_rules", "shapes", "frequencies", "transfers", "feed_info" };
 
+/*Checks if files listed as "Required" under the GTFS are present*/
 bool mandatoryFileCheck() {
 	bool fileFlag;
 	bool returnFlag = true;
@@ -41,7 +42,7 @@ bool mandatoryFileCheck() {
 	return (returnFlag);
 }
 
-//Hide the output cursor.
+/*Shows/Hides the blinking console cursor*/
 void showConsoleCursor(bool showFlag)
 {
 	HANDLE out = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -53,7 +54,7 @@ void showConsoleCursor(bool showFlag)
 	SetConsoleCursorInfo(out, &cursorInfo);
 }
 
-//Initialize/Clear the error output file
+/*Initialize/Clear the error output file*/
 void initErrorFile(time_t currentTime) {
 //The file output name can be changed under files.cpp
 	ofstream initErrFile;

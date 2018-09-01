@@ -5,7 +5,7 @@
 
 using namespace std;
 
-//The callback function used when SELECT statements are called
+/*The callback function used when SELECT statements are called*/
 int callback(void *pArg, int argc, char **argv, char **colName)
 {
 	for (int i = 0; i < argc; i++)
@@ -16,7 +16,7 @@ int callback(void *pArg, int argc, char **argv, char **colName)
 	return 0;
 }
 
-//Initalizes the database with the standard headers specified under the GTFS
+/*Initalizes the database with the standard headers specified under the GTFS*/
 void initDatabase(void* dbx) {
 	sqlite3 *db = (sqlite3*)dbx;
 	const int STATEMENTS = 13;
@@ -170,18 +170,21 @@ void initDatabase(void* dbx) {
 	}
 }
 
-//Inserts values into the database
+/*Inserts values into the database*/
 void writeValues(void* dbx, string file) {
 	sqlite3 *db = (sqlite3*)dbx;
 	char* zErrMsg;
 	int rc;
-	int linesProcessed = 0;
-	int bytesProcessed = 0;
-	int errors = 0;
-	int totalBytes = 0;
-	double completion = 0;
-	string headers;
-	string line;
+
+	//Counters
+	int linesProcessed = 0; //Counts the number of lines processed
+	int bytesProcessed = 0; //Used by seekg(). Used to calculate % completion
+	int errors = 0; //Counts the number of errors
+	int totalBytes = 0; //Stores the total number of bytes from seekg(<file pointer>.end)
+	double completion = 0; //Determines % completion
+
+	string headers; //The columns from the GTFS file to be inserted
+	string line; //The line being read from the file
 	string sqlCommand;
 
 	ifstream fp(GTFSDir + "/" + file + ".txt");
@@ -202,7 +205,7 @@ void writeValues(void* dbx, string file) {
 
 	//Check if the file is encoded with a byte-order mark
 	headers = checkEncoding(headers); 
-	tableColExists(db, file, headers);
+	checkTableCol(db, file, headers);
 
 	//Read the read of the lines and insert into the table
 	sqlite3_exec(db, "BEGIN TRANSACTION", callback, 0, &zErrMsg);
@@ -243,13 +246,12 @@ void writeValues(void* dbx, string file) {
 	fp.close();
 }
 
-void tableColExists(void * dbx, string table, string header){
+/*Checks if a table exists from the file header. If a column doesn't exist, create one*/
+void checkTableCol(void * dbx, string table, string header){
 	sqlite3 *db = (sqlite3*)dbx;
 
-	//
 	stringstream iss(header);
 	string token;
-	string userAnswer;
 
 	//Output the affected table for the user to see
 	cout << "  " << table << ":";
@@ -259,66 +261,79 @@ void tableColExists(void * dbx, string table, string header){
 		//Check if the column would exist
 		string sqlCommand = "SELECT " + token + " FROM " + table + " LIMIT 0";
 		int rc = sqlite3_exec(db, sqlCommand.c_str(), 0, 0, NULL);
-		bool validInputFlag = true;
-		int totalPlaces = 8; //Default total number of digits
-		int decimalPoints = 2; //Default decimal points
-		int varcharSize = 128; //Set a default value
 
+		//If the command wasn't able to find the column in the table, ask the user to create one
 		if (rc != SQLITE_OK) {
-			cout << endl;
-			cout << "    \"" << token << "\" currently doesn't exist in the database." << endl;
-			cout << "    Would you like to add this column? [y/N]? ";
-			showConsoleCursor(true); //Enable cursor to indicate that the program wants user action
-			cin >> userAnswer;
-			cin.ignore();
-
-			if (userAnswer[0] == 'Y' || userAnswer[0] == 'y') {
-				do {
-					cout << "    What kind of data will this field contain?" << endl;
-					cout << "    1. True/False flags (boolean)" << endl;
-					cout << "    2. Date" << endl;
-					cout << "    3. Numbers without decimals" << endl;
-					cout << "    4. Numbers with decimals" << endl;
-					cout << "    5. Numbers and/or letters (varchar)" << endl;
-					cout << "    : ";
-					cin >> userAnswer;
-					cin.ignore();
-
-					switch (userAnswer[0]) {
-						case '1': //boolean
-							sqlCommand = "ALTER TABLE " + table + " ADD COLUMN " + token + " bool";
-							sqlite3_exec(db, sqlCommand.c_str(), 0, 0, NULL);
-							validInputFlag = true;
-							break;
-						case '2': //date. Written as 'YYYYMMDD', 'MMDDYYYY', or 'DDMMYYYY'
-							sqlCommand = "ALTER TABLE " + table + " ADD COLUMN " + token + " varchar(8)";
-							sqlite3_exec(db, sqlCommand.c_str(), 0, 0, NULL);
-							validInputFlag = true;
-							break;
-						case '3': //integer
-							sqlCommand = "ALTER TABLE " + table + " ADD COLUMN " + token + " integer";
-							sqlite3_exec(db, sqlCommand.c_str(), 0, 0, NULL);
-							validInputFlag = true;
-							break;
-						case '4': //decimals
-							sqlCommand = "ALTER TABLE " + table + " ADD COLUMN " + token + " decimal(" + to_string(totalPlaces) + "," + to_string(decimalPoints) + ")";
-							sqlite3_exec(db, sqlCommand.c_str(), 0, 0, NULL);
-							validInputFlag = true;
-							break;
-						case '5': //varchar
-							sqlCommand = "ALTER TABLE " + table + " ADD COLUMN " + token + " varchar(" + to_string(varcharSize) + ")";
-							sqlite3_exec(db, sqlCommand.c_str(), 0, 0, NULL);
-							validInputFlag = true;
-							break;
-						default:
-							cout << "    Invalid option. Please try again" << endl;
-							validInputFlag = false;
-					}
-				} while (validInputFlag == false);
-			}
-			showConsoleCursor(false); //Hide the cursor again
+			createTableCol(db, token, table);
 		}
 	}
 
 	return;
+}
+
+/*Creates a new table column. Acts as a wizard.*/
+void createTableCol(void* dbx, string table, string token) {
+	sqlite3* db = (sqlite3*)dbx;
+	bool validInputFlag = true;
+	int totalPlaces = 8; //Default total number of digits
+	int decimalPoints = 2; //Default decimal points
+	int varcharSize = 128; //Set a default value
+	string userAnswer;
+	string sqlCommand;
+
+	cout << endl;
+	cout << "    \"" << token << "\" currently doesn't exist in the database." << endl;
+	cout << "    Would you like to add this column? [y/N]? ";
+
+	showConsoleCursor(true); //Enable cursor to indicate that the program wants user action
+	cin >> userAnswer;
+	cin.ignore();
+
+	//If the user answered with 'Y' or 'y' to the previous question
+	if (userAnswer[0] == 'Y' || userAnswer[0] == 'y') {
+		do {
+			cout << "    What kind of data will this field contain?" << endl;
+			cout << "    1. True/False flags (boolean)" << endl;
+			cout << "    2. Numbers without decimals" << endl;
+			cout << "    3. Numbers with decimals" << endl;
+			cout << "    4. Numbers and/or letters (small)" << endl;
+			cout << "    5. Numbers and/or letters (large)" << endl;
+			cout << "    : ";
+			cin >> userAnswer;
+			cin.ignore();
+
+			//Perform action based on input
+			switch (userAnswer[0]) {
+			case '1': //boolean
+				sqlCommand = "ALTER TABLE " + table + " ADD COLUMN " + token + " bool";
+				sqlite3_exec(db, sqlCommand.c_str(), 0, 0, NULL);
+				validInputFlag = true;
+				break;
+			case '2': //integer
+				sqlCommand = "ALTER TABLE " + table + " ADD COLUMN " + token + " integer";
+				sqlite3_exec(db, sqlCommand.c_str(), 0, 0, NULL);
+				validInputFlag = true;
+				break;
+			case '3': //decimals
+				sqlCommand = "ALTER TABLE " + table + " ADD COLUMN " + token + " decimal(" + to_string(totalPlaces) + "," + to_string(decimalPoints) + ")";
+				sqlite3_exec(db, sqlCommand.c_str(), 0, 0, NULL);
+				validInputFlag = true;
+				break;
+			case '4': //small varchar (set to 8 characters), such as a date written as 'YYYYMMDD'
+				sqlCommand = "ALTER TABLE " + table + " ADD COLUMN " + token + " varchar(8)";
+				sqlite3_exec(db, sqlCommand.c_str(), 0, 0, NULL);
+				validInputFlag = true;
+				break;
+			case '5': //large varchar (set to 128 characters)
+				sqlCommand = "ALTER TABLE " + table + " ADD COLUMN " + token + " varchar(" + to_string(varcharSize) + ")";
+				sqlite3_exec(db, sqlCommand.c_str(), 0, 0, NULL);
+				validInputFlag = true;
+				break;
+			default:
+				cout << "    Invalid option. Please try again" << endl;
+				validInputFlag = false;
+			}
+		} while (validInputFlag == false);
+	}
+	showConsoleCursor(false); //Hide the cursor
 }
