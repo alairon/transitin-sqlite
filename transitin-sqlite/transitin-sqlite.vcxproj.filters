@@ -38,9 +38,6 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="transitin-qlite.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="database.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -51,6 +48,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="system.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="transitin-sqlite.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

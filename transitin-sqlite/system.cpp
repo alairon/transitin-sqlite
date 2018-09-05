@@ -4,9 +4,9 @@
 
 using namespace std;
 
+string GTFSDir = "GTFS_Samples";
 string defaultGTFSFilename = "GTFS_Data.sqlite";
 string GTFSErrorFilename = "GTFS_Errors.txt";
-string GTFSDir = "GTFS_Samples";
 
 string mandatoryFiles[6] = { "agency", "stops", "routes", "trips", "stop_times", "calendar" };
 string optionalFiles[7] = { "calendar_dates", "fare_attributes", "fare_rules", "shapes", "frequencies", "transfers", "feed_info" };
@@ -47,7 +47,7 @@ void showConsoleCursor(bool showFlag)
 {
 	HANDLE out = GetStdHandle(STD_OUTPUT_HANDLE);
 
-	CONSOLE_CURSOR_INFO     cursorInfo;
+	CONSOLE_CURSOR_INFO cursorInfo;
 
 	GetConsoleCursorInfo(out, &cursorInfo);
 	cursorInfo.bVisible = showFlag;

@@ -6,20 +6,19 @@
 /.vs
 /Debug
 /Release
-/transitin-qlite/Debug
-/transitin-qlite/Release
+/transitin-sqlite/Debug
+/transitin-sqlite/Release
 
 ## Visual Studio Temp/Recovery Files ##
 /enc_temp_folder
 
 ## Personal Testing Files ##
-/transitin-qlite/debugDB
-/transitin-qlite/GTFS_Samples
-/transitin-qlite/GTFSErrors.txt
+/transitin-sqlite/debugDB
+/transitin-sqlite/GTFS_Samples
+/transitin-sqlite/GTFSErrors.txt
 
 ## SQLite files ##
 *.db
-*.sqlite
-*.sqlite3
-*.sqlite3-journal
+*.sqlite*
 *.txt
+*.*-journal
